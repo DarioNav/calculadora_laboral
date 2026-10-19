@@ -1,0 +1,1085 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquidación por despido</title>
+<meta name="description" content="Calculadora de liquidación por despido (LCT, Argentina) con memoria de cálculo: cada importe muestra su norma, fórmula y reemplazo de datos.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231F4E79'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='white' font-family='Georgia,serif'%3E%C2%A7%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#EDF0F3; --paper:#FFFFFF; --ink:#1A2433; --muted:#566273; --rule:#C9D1DA; --soft:#F5F7F9;
+  --accent:#1F4E79; --accent-ink:#FFFFFF; --pen:#B42318; --pen-bg:#FDF1EF; --focus:#1F4E79;
+  --serif: Charter, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#11161D; --paper:#18202A; --ink:#E7ECF1; --muted:#9AA7B6; --rule:#33404E; --soft:#1E2733;
+    --accent:#7FB2E5; --accent-ink:#0E1620; --pen:#F2877C; --pen-bg:#2C1B1A; --focus:#7FB2E5; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5}
+.wrap{max-width:1260px;margin:0 auto;padding:0 20px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* Encabezado */
+.top{background:var(--paper);border-bottom:1px solid var(--rule)}
+.top .wrap{padding-top:28px;padding-bottom:24px;display:grid;gap:6px}
+.top h1{margin:0;font-family:var(--serif);font-weight:700;font-size:clamp(1.7rem,3.4vw,2.4rem);letter-spacing:-.01em;line-height:1.15}
+.top .lede{margin:0;max-width:62ch;color:var(--muted)}
+.top .org{margin:4px 0 0;font-size:.9rem;color:var(--muted)}
+
+/* Estructura */
+.layout{display:grid;grid-template-columns:minmax(300px,390px) minmax(0,1fr);gap:44px;align-items:start;padding:28px 0 56px}
+@media (max-width:940px){.layout{grid-template-columns:1fr;gap:28px}}
+form.panel{background:var(--paper);border:1px solid var(--rule);border-radius:4px;padding:6px 20px 20px}
+@media (min-width:941px){form.panel{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}}
+fieldset{border:0;border-top:1px solid var(--rule);margin:0;padding:18px 0 4px;min-width:0}
+fieldset:first-of-type{border-top:0}
+legend{padding:0;font-family:var(--serif);font-weight:700;font-size:1.08rem;margin-bottom:10px}
+.field{display:grid;gap:4px;margin-bottom:14px}
+.field label,.check span.lbl{font-size:.92rem;font-weight:600}
+.hint{font-size:.84rem;color:var(--muted);margin:0}
+.interp{font-size:.84rem;color:var(--accent);margin:0;min-height:1.2em;font-variant-numeric:tabular-nums}
+input[type=text],input[type=date],select{width:100%;font:inherit;color:var(--ink);background:var(--soft);border:1px solid var(--rule);border-radius:4px;padding:9px 10px;min-height:42px}
+input[type=text]:hover,input[type=date]:hover,select:hover{border-color:var(--muted)}
+.check{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;margin-bottom:12px}
+.check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--accent)}
+.check .hint{grid-column:2}
+.regimen{display:inline-block;margin:0 0 14px;padding:6px 10px;border:1px solid var(--rule);border-left:4px solid var(--accent);background:var(--soft);font-size:.9rem;border-radius:3px}
+.aviso{font-size:.88rem;background:var(--soft);border:1px solid var(--rule);border-radius:4px;padding:9px 11px;margin:0 0 14px;color:var(--muted)}
+details.cfg{border-top:1px solid var(--rule);margin-top:6px;padding-top:12px}
+details.cfg>summary{cursor:pointer;font-family:var(--serif);font-weight:700;font-size:1.08rem;margin-bottom:10px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.btn{font:inherit;font-weight:600;border-radius:4px;padding:10px 16px;min-height:44px;cursor:pointer;border:1px solid var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.secondary{background:transparent;color:var(--accent)}
+.btn.secondary:hover{background:var(--soft)}
+.examples{margin:14px 0 0;font-size:.88rem;color:var(--muted)}
+.examples button{font:inherit;background:none;border:0;padding:2px 0;color:var(--accent);text-decoration:underline;cursor:pointer}
+
+/* Resultados */
+.out h2{font-family:var(--serif);font-weight:700;font-size:1.45rem;margin:0 0 12px;line-height:1.2}
+.out section{margin-bottom:40px}
+.empty{background:var(--paper);border:1px dashed var(--rule);border-radius:4px;padding:28px}
+.empty h2{margin-top:0}
+.empty p{margin:0;color:var(--muted);max-width:56ch}
+.err{background:var(--pen-bg);border:1px solid var(--pen);border-left-width:5px;border-radius:4px;padding:12px 14px;margin-bottom:20px}
+.err strong{color:var(--pen)}
+.total{background:var(--paper);border:1px solid var(--rule);border-radius:4px;padding:22px 24px}
+.total .amount{font-family:var(--serif);font-weight:700;font-size:clamp(2.1rem,5vw,3.1rem);line-height:1.1;margin:2px 0 6px;font-variant-numeric:tabular-nums;color:var(--accent)}
+.total p{margin:0;color:var(--muted);font-size:.95rem}
+table{border-collapse:collapse;width:100%}
+table.liq{margin-top:18px;font-size:.98rem}
+table.liq th,table.liq td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+table.liq td.num,table.liq th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.liq tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0;font-size:1.05rem}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 0;align-items:center}
+.toolbar .status{font-size:.9rem;color:var(--muted)}
+table.datos th{width:46%;font-weight:600;color:var(--muted);text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule)}
+table.datos td{padding:7px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+.paper{background:var(--paper);border:1px solid var(--rule);border-radius:4px;padding:6px 16px}
+ul.plain{margin:0;padding-left:1.2em}
+ul.plain li{margin:8px 0}
+
+/* Memoria de cálculo: planilla con la norma al margen */
+.memoria{background:var(--paper);border:1px solid var(--rule);border-radius:4px}
+.memoria .head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 18px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.memoria .head h2{margin:0}
+details.rubro{border-bottom:1px solid var(--rule)}
+details.rubro:last-child{border-bottom:0}
+details.rubro>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:14px 24px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:14px 18px;font-family:var(--serif);font-size:1.08rem;font-weight:700}
+details.rubro>summary::-webkit-details-marker{display:none}
+details.rubro>summary::before{content:"";width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);justify-self:center;align-self:center;transition:transform .15s}
+details.rubro[open]>summary::before{transform:rotate(45deg)}
+details.rubro>summary .amt{font-variant-numeric:tabular-nums;color:var(--accent);white-space:nowrap}
+details.rubro>summary:hover{background:var(--soft)}
+.rb{display:grid;grid-template-columns:210px minmax(0,1fr);gap:8px 26px;padding:4px 18px 20px 56px}
+@media (max-width:760px){.rb{grid-template-columns:1fr;padding-left:18px}}
+.rb .margen{font-size:.88rem;color:var(--muted);border-left:3px solid var(--rule);padding-left:12px;align-self:start}
+.rb .margen b{display:block;color:var(--ink);font-family:var(--sans);margin-bottom:2px}
+.rb .cuerpo{font-family:var(--serif);font-size:1.02rem;line-height:1.6;max-width:72ch}
+.rb h3{font-family:var(--sans);font-size:.95rem;font-weight:700;margin:14px 0 4px;color:var(--ink)}
+.rb h3:first-child{margin-top:0}
+.rb .formula{background:var(--soft);border:1px solid var(--rule);border-radius:3px;padding:8px 12px;font-family:var(--serif);font-style:italic}
+.rb ol{margin:4px 0 0;padding-left:1.3em}
+.rb ol li{margin:6px 0;font-variant-numeric:tabular-nums}
+.rb .res{margin:12px 0 0;font-weight:700;font-variant-numeric:tabular-nums}
+.rb .expl{margin:10px 0 0}
+.pen{margin:14px 0 0;border-left:4px solid var(--pen);background:var(--pen-bg);padding:9px 12px;font-family:var(--sans);font-size:.92rem}
+.pen b{color:var(--pen)}
+.nota{margin:14px 0 0;border-left:4px solid var(--rule);padding:9px 12px;font-family:var(--sans);font-size:.92rem;color:var(--muted)}
+.nota b{color:var(--ink)}
+.nop dt{font-weight:700;margin-top:10px}
+.nop dd{margin:2px 0 0;color:var(--muted)}
+.pie{font-size:.88rem;color:var(--muted);border-top:1px solid var(--rule);padding:18px 0 40px}
+.pie p{margin:4px 0}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+@media print{
+  body{background:#fff;color:#000}
+  .top .lede,.panel,.toolbar,.examples,.memoria .head button{display:none!important}
+  .layout{display:block;padding-top:0}
+  .total,.memoria,.paper{border-color:#999;break-inside:avoid}
+  details.rubro{break-inside:avoid}
+  .rb{grid-template-columns:170px 1fr}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Liquidación por despido</h1>
+    <p class="lede">Calcula los rubros de la Ley de Contrato de Trabajo y muestra, para cada importe, la norma, la fórmula y el reemplazo de datos.</p>
+    <p class="org" id="org-lab">Darío Navarro</p>
+  </div>
+</header>
+
+<main class="wrap layout">
+  <form class="panel" id="f" novalidate aria-label="Datos de la liquidación">
+    <fieldset>
+      <legend>Contrato y extinción</legend>
+      <div class="field"><label for="fecha_ingreso">Fecha de ingreso</label><input type="date" id="fecha_ingreso" required></div>
+      <div class="field"><label for="fecha_fin">Fecha de extinción</label><input type="date" id="fecha_fin" required></div>
+      <p class="regimen" id="regimen" hidden></p>
+      <div class="field"><label for="tipo_extincion">Modo de extinción</label>
+        <select id="tipo_extincion">
+          <option value="sin_causa">Despido sin justa causa</option>
+          <option value="indirecto">Despido indirecto (art. 242 y 246)</option>
+          <option value="con_causa">Despido con justa causa</option>
+          <option value="renuncia">Renuncia</option>
+        </select>
+        <p class="hint">Con justa causa y renuncia solo corresponden los rubros que no son indemnizatorios.</p>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Remuneración</legend>
+      <div class="field"><label for="mrmnh">Mejor remuneración mensual normal y habitual (MRMNH)</label>
+        <input type="text" id="mrmnh" inputmode="decimal" autocomplete="off" placeholder="Ej.: 1.000.000" required>
+        <p class="hint">La mejor remuneración devengada en el último año, sin SAC.</p><p class="interp" id="i_mrmnh"></p></div>
+      <div class="field"><label for="salario_mensual">Salario mensual a la fecha de extinción</label>
+        <input type="text" id="salario_mensual" inputmode="decimal" autocomplete="off">
+        <p class="hint">Dejalo vacío si es igual a la MRMNH.</p><p class="interp" id="i_salario_mensual"></p></div>
+      <div class="field"><label for="tope_convenio">Tope indemnizatorio del convenio</label>
+        <input type="text" id="tope_convenio" inputmode="decimal" autocomplete="off">
+        <p class="hint">Monto del tope del art. 245, 2.º párrafo. Dejalo vacío si no aplica.</p><p class="interp" id="i_tope_convenio"></p></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Preaviso y vacaciones</legend>
+      <label class="check"><input type="checkbox" id="preaviso_otorgado"><span class="lbl">El empleador otorgó el preaviso</span></label>
+      <div class="field"><label for="vacaciones_gozadas_dias">Días de vacaciones ya gozados en el año de egreso</label>
+        <input type="text" id="vacaciones_gozadas_dias" inputmode="decimal" value="0"></div>
+      <div class="field"><label for="vacaciones_anteriores_dias">Días de vacaciones de años anteriores no gozados</label>
+        <input type="text" id="vacaciones_anteriores_dias" inputmode="decimal" value="0"></div>
+    </fieldset>
+
+    <fieldset id="grp_hist" hidden>
+      <legend>Régimen anterior a la Ley 27.742</legend>
+      <label class="check"><input type="checkbox" id="registracion_deficiente"><span class="lbl">La relación no estaba registrada o lo estaba deficientemente</span><span class="hint">Art. 1 de la Ley 25.323.</span></label>
+      <label class="check"><input type="checkbox" id="certificado_entregado" checked><span class="lbl">Se entregaron los certificados del art. 80 dentro de los 30 días</span></label>
+      <label class="check" id="w_int_cert"><input type="checkbox" id="intimacion_certificado" checked><span class="lbl">El trabajador intimó la entrega de los certificados</span><span class="hint">Exigencia del Decreto 146/01.</span></label>
+      <label class="check"><input type="checkbox" id="intimacion_pago" checked><span class="lbl">El trabajador intimó fehacientemente el pago de las indemnizaciones</span><span class="hint">Exigencia del art. 2 de la Ley 25.323.</span></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Situaciones especiales</legend>
+      <label class="check"><input type="checkbox" id="despido_matrimonio"><span class="lbl">Despido por causa de matrimonio</span><span class="hint">Arts. 180 a 182.</span></label>
+      <label class="check"><input type="checkbox" id="despido_embarazo"><span class="lbl">Despido por embarazo o maternidad</span><span class="hint">Arts. 177, 178 y 182.</span></label>
+      <label class="check"><input type="checkbox" id="despido_discriminatorio"><span class="lbl">Una sentencia declaró el despido discriminatorio</span><span class="hint">Art. 245 bis, solo desde el 9/7/2024.</span></label>
+      <div class="field" id="w_pct" hidden><label for="porcentaje_discriminatorio">Agravamiento por despido discriminatorio</label>
+        <select id="porcentaje_discriminatorio"><option value="50">50% de la indemnización del art. 245</option><option value="100">100% de la indemnización del art. 245</option></select></div>
+    </fieldset>
+
+    <details class="cfg">
+      <summary>Criterios configurables</summary>
+      <div class="field"><label for="periodo_prueba_meses">Período de prueba</label>
+        <select id="periodo_prueba_meses"><option value="" id="opt_auto">Automático</option><option value="3">3 meses</option><option value="6">6 meses</option><option value="8">8 meses</option><option value="12">12 meses</option></select>
+        <p class="hint">Dentro del período de prueba no corresponde la indemnización del art. 245.</p></div>
+      <div class="field"><label for="divisor_sac">Divisor del SAC proporcional</label>
+        <select id="divisor_sac"><option value="180">180 días (práctica habitual)</option><option value="real">Días reales del semestre</option></select></div>
+      <label class="check"><input type="checkbox" id="sac_sobre_integracion"><span class="lbl">Calcular SAC sobre la integración del mes</span><span class="hint">Criterio discutido en la jurisprudencia.</span></label>
+      <label class="check"><input type="checkbox" id="aplicar_vizzoti" checked><span class="lbl">Aplicar el límite del 33% al tope (Vizzoti y Díaz)</span></label>
+    </details>
+
+    <div class="actions">
+      <button type="submit" class="btn primary">Calcular liquidación</button>
+      <button type="button" class="btn secondary" id="limpiar">Borrar datos</button>
+    </div>
+    <p class="examples">Probá con un caso de ejemplo:
+      <button type="button" data-ej="vigente">despido de 2025</button>,
+      <button type="button" data-ej="historico">despido de 2023 con multas</button></p>
+  </form>
+
+  <div class="out" id="out" aria-live="polite">
+    <div class="empty">
+      <h2>Completá los datos y calculá</h2>
+      <p>Vas a ver el total y la tabla de rubros. Debajo, la memoria de cálculo: para cada rubro, la norma, la fórmula, los pasos con tus datos y los criterios que conviene revisar.</p>
+    </div>
+  </div>
+</main>
+
+<div class="wrap">
+  <footer class="pie" id="pie"></footer>
+</div>
+
+<noscript><div class="wrap"><p>Esta calculadora necesita JavaScript. Los datos se procesan en tu navegador y no se envían a ningún servidor.</p></div></noscript>
+
+<script>
+/* Liquidación por despido (LCT, Argentina) — motor de cálculo con memoria de cálculo.
+ * Port a JavaScript de scripts/calc_liquidacion.py. Ambos deben dar resultados idénticos
+ * (ver scripts/test_paridad.py). No modificar uno sin modificar el otro.
+ */
+(function (root) {
+  "use strict";
+
+  var VERSION_MOTOR = "1.0.0";
+  var MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+    "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  var TIPOS = {
+    sin_causa: "Despido sin justa causa",
+    indirecto: "Despido indirecto (arts. 242 y 246 LCT)",
+    con_causa: "Despido con justa causa",
+    renuncia: "Renuncia"
+  };
+  var DEFAULTS = {
+    tipo_extincion: "sin_causa",
+    salario_mensual: null,
+    tope_convenio: null,
+    preaviso_otorgado: false,
+    vacaciones_gozadas_dias: 0,
+    vacaciones_anteriores_dias: 0,
+    periodo_prueba_meses: null,
+    registracion_deficiente: false,
+    certificado_entregado: true,
+    intimacion_certificado: true,
+    intimacion_pago: true,
+    despido_matrimonio: false,
+    despido_embarazo: false,
+    despido_discriminatorio: false,
+    porcentaje_discriminatorio: 50,
+    sac_sobre_integracion: false,
+    divisor_sac: "180",
+    aplicar_vizzoti: true
+  };
+  var KEEP_NULL = ["salario_mensual", "tope_convenio", "periodo_prueba_meses"];
+
+  /* ------------------------------------------------------------ utilidades */
+  function r(x, d) {
+    if (d === undefined) d = 2;
+    var f = Math.pow(10, d);
+    return Math.floor(x * f + 0.5 + 1e-9) / f;
+  }
+  function group(s) {
+    var out = [];
+    while (s.length > 3) { out.unshift(s.slice(-3)); s = s.slice(0, -3); }
+    out.unshift(s);
+    return out.join(".");
+  }
+  function M(x) {
+    var v = r(x, 2);
+    var neg = v < 0;
+    var s = Math.abs(v).toFixed(2);
+    var p = s.split(".");
+    return (neg ? "-" : "") + "$\u00a0" + group(p[0]) + "," + p[1];
+  }
+  function N(x, maxd) {
+    if (maxd === undefined) maxd = 4;
+    var v = r(x, maxd);
+    var s = v.toFixed(maxd);
+    if (s.indexOf(".") >= 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    if (s === "-0" || s === "") s = "0";
+    return s.replace(".", ",");
+  }
+  function pad(n, w) { var s = String(n); while (s.length < w) s = "0" + s; return s; }
+
+  function dim(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+  function mkd(y, m, d) { return { y: y, m: m, d: d, o: Math.round(Date.UTC(y, m - 1, d) / 86400000) }; }
+  function fromOrd(o) {
+    var t = new Date(o * 86400000);
+    return mkd(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate());
+  }
+  function addDays(dt, n) { return fromOrd(dt.o + n); }
+  function dmax(a, b) { return a.o >= b.o ? a : b; }
+  function F(dt) { return pad(dt.d, 2) + "/" + pad(dt.m, 2) + "/" + pad(dt.y, 4); }
+  function addMonths(dt, n) {
+    var total = dt.y * 12 + (dt.m - 1) + n;
+    var y = Math.floor(total / 12);
+    var m = total % 12 + 1;
+    return mkd(y, m, Math.min(dt.d, dim(y, m)));
+  }
+  function ymdDiff(start, endExcl) {
+    var meses = (endExcl.y - start.y) * 12 + (endExcl.m - start.m);
+    if (endExcl.d < start.d) meses -= 1;
+    var ancla = addMonths(start, meses);
+    var dias = endExcl.o - ancla.o;
+    return { anios: Math.floor(meses / 12), meses: meses % 12, dias: dias,
+      total_meses: meses, total_dias: endExcl.o - start.o };
+  }
+  function plur(n, s, pl) { return n + " " + (n === 1 ? s : pl); }
+  function fmtAnt(a) {
+    return plur(a.anios, "año", "años") + ", " + plur(a.meses, "mes", "meses") + " y " + plur(a.dias, "día", "días");
+  }
+  function excedeAnios(a, n) { return a.anios > n || (a.anios === n && (a.meses > 0 || a.dias > 0)); }
+  function fraccionMayor3m(a) { return a.meses > 3 || (a.meses === 3 && a.dias > 0); }
+
+  function parseFecha(s, nombre) {
+    var m = /^(\d{1,4})-(\d{1,2})-(\d{1,2})$/.exec(String(s));
+    if (m) {
+      var y = parseInt(m[1], 10), mo = parseInt(m[2], 10), d = parseInt(m[3], 10);
+      if (y >= 1 && mo >= 1 && mo <= 12 && d >= 1 && d <= dim(y, mo)) return mkd(y, mo, d);
+    }
+    throw new Error(nombre + ": fecha inválida '" + s + "' (usar AAAA-MM-DD)");
+  }
+  function num(v, nombre, positivo) {
+    var x = (typeof v === "string" && v.trim() === "") ? NaN : Number(v);
+    if (isNaN(x)) throw new Error(nombre + ": valor numérico inválido '" + v + "'");
+    if (x < 0 || (positivo && x <= 0)) {
+      throw new Error(nombre + ": debe ser " + (positivo ? "mayor que" : "mayor o igual a") + " 0");
+    }
+    return x;
+  }
+  function mk(clave, concepto, procede, valor, norma, formula, pasos, explicacion, criterio, motivo, validar) {
+    return { clave: clave, concepto: concepto, procede: procede, valor: procede ? valor : 0,
+      norma: norma, formula: formula, pasos: pasos, explicacion: explicacion,
+      criterio: criterio || "", validar: !!validar, motivo: motivo || "" };
+  }
+
+  /* ------------------------------------------------------------ motor */
+  function calcular(entrada) {
+    var d = {}, k;
+    for (k in DEFAULTS) d[k] = DEFAULTS[k];
+    for (k in entrada) {
+      var v0 = entrada[k];
+      if ((v0 !== null && v0 !== undefined) || KEEP_NULL.indexOf(k) >= 0) d[k] = v0 === undefined ? null : v0;
+    }
+
+    var ing = parseFecha(d.fecha_ingreso, "fecha_ingreso");
+    var fin = parseFecha(d.fecha_fin, "fecha_fin");
+    if (fin.o < ing.o) throw new Error("fecha_fin no puede ser anterior a fecha_ingreso");
+    var tipo = d.tipo_extincion;
+    if (!TIPOS.hasOwnProperty(tipo)) throw new Error("tipo_extincion inválido: " + tipo);
+    var mrmnh = num(d.mrmnh, "mrmnh", true);
+    var sm = d.salario_mensual ? num(d.salario_mensual, "salario_mensual", true) : mrmnh;
+    var tope = d.tope_convenio ? num(d.tope_convenio, "tope_convenio", true) : null;
+    var gozadas = num(d.vacaciones_gozadas_dias, "vacaciones_gozadas_dias");
+    var anteriores = num(d.vacaciones_anteriores_dias, "vacaciones_anteriores_dias");
+    var divisorOpt = String(d.divisor_sac);
+    if (divisorOpt !== "180" && divisorOpt !== "real") throw new Error("divisor_sac debe ser '180' o 'real'");
+    var pctDisc = num(d.porcentaje_discriminatorio, "porcentaje_discriminatorio", true);
+
+    var FECHA_LEY_BASES = mkd(2024, 7, 9);
+    var PAN_INI = mkd(2019, 12, 13), PAN_FIN = mkd(2022, 6, 30);
+    var hist = fin.o < FECHA_LEY_BASES.o;
+    var incausado = tipo === "sin_causa" || tipo === "indirecto";
+    var finExcl = addDays(fin, 1);
+    var ant = ymdDiff(ing, finExcl);
+    var prueba = d.periodo_prueba_meses;
+    var pruebaAuto = (prueba === null || prueba === undefined);
+    if (pruebaAuto) prueba = hist ? 3 : 6;
+    prueba = Math.trunc(Number(prueba));
+    var enPrueba = ant.total_meses < prueba;
+    var sd = sm / 30;
+    var dimFin = dim(fin.y, fin.m);
+
+    var rubros = [], adv = [], val = {};
+    var pasos, v, v2, crit, critValidar, base, per, frac;
+
+    /* 1. Días trabajados del mes de despido */
+    var inicioMes = mkd(fin.y, fin.m, 1);
+    var desde = dmax(ing, inicioMes);
+    var diasTrab = fin.o - desde.o + 1;
+    var completo = diasTrab === dimFin;
+    if (completo) {
+      v = r(sm);
+      pasos = ["El mes de " + MESES[fin.m - 1] + " tiene " + dimFin + " días y se trabajaron los " + diasTrab +
+        " (del " + F(desde) + " al " + F(fin) + ").",
+        "Se trabajó el mes completo: corresponde el salario mensual = " + M(sm)];
+    } else {
+      v = r(sd * diasTrab);
+      pasos = ["Salario diario = salario mensual / 30 = " + M(sm) + " / 30 = " + M(sd),
+        "Días trabajados del " + F(desde) + " al " + F(fin) + " = " + diasTrab + " días",
+        "Remuneración = salario diario × días trabajados = " + M(sd) + " × " + diasTrab + " = " + M(v)];
+    }
+    val.dias_mes = v;
+    rubros.push(mk("dias_mes", "Días trabajados del mes de despido", true, v,
+      "Art. 103 LCT (remuneración) y art. 140 LCT (salario mensual dividido 30)",
+      "salario mensual / 30 × días trabajados del mes",
+      pasos,
+      "Es el sueldo devengado y no pagado hasta la fecha de extinción. Se divide el salario mensual por 30 para obtener el valor diario."));
+
+    /* 2. SAC proporcional */
+    var sIni, sFin, sNom;
+    if (fin.m <= 6) { sIni = mkd(fin.y, 1, 1); sFin = mkd(fin.y, 6, 30); sNom = "1.º semestre"; }
+    else { sIni = mkd(fin.y, 7, 1); sFin = mkd(fin.y, 12, 31); sNom = "2.º semestre"; }
+    var sReal = sFin.o - sIni.o + 1;
+    var sDesde = dmax(ing, sIni);
+    var diasSem = fin.o - sDesde.o + 1;
+    var divisor = divisorOpt === "180" ? 180 : sReal;
+    v = r((mrmnh / 2) / divisor * diasSem);
+    val.sac = v;
+    rubros.push(mk("sac", "SAC (aguinaldo) proporcional", true, v,
+      "Ley 23.041 y Decreto 1078/84 (SAC proporcional); art. 123 LCT",
+      "(MRMNH / 2) / divisor × días trabajados en el semestre",
+      ["Semestre de la extinción: " + sNom + " (" + F(sIni) + " al " + F(sFin) + ", " + sReal + " días corridos)",
+        "Días trabajados en el semestre = del " + F(sDesde) + " al " + F(fin) + " = " + diasSem + " días",
+        "Mitad de la mejor remuneración = " + M(mrmnh) + " / 2 = " + M(mrmnh / 2),
+        "Divisor adoptado = " + divisor + " días",
+        "SAC proporcional = (" + M(mrmnh / 2) + " / " + divisor + ") × " + diasSem + " = " + M(v)],
+      "El aguinaldo es el 50% de la mejor remuneración del semestre; se paga proporcional a los días trabajados del semestre en que se extingue el contrato.",
+      "Divisor: " + (divisorOpt === "180" ? "180 días (criterio de práctica habitual)."
+        : "días reales del semestre (" + sReal + ").") +
+      " Es una opción configurable. Se toma como base la MRMNH informada, entendida como la mejor remuneración mensual del semestre."));
+
+    /* 3. Vacaciones no gozadas */
+    var finAnio = mkd(fin.y, 12, 31);
+    var ant31 = ymdDiff(ing, addDays(finAnio, 1));
+    var diasVac;
+    if (!excedeAnios(ant31, 5)) diasVac = 14;
+    else if (!excedeAnios(ant31, 10)) diasVac = 21;
+    else if (!excedeAnios(ant31, 20)) diasVac = 28;
+    else diasVac = 35;
+    var aDesde = dmax(ing, mkd(fin.y, 1, 1));
+    var diasAnio = fin.o - aDesde.o + 1;
+    pasos = ["Antigüedad al 31/12/" + fin.y + " = " + fmtAnt(ant31) + " → corresponden " + diasVac +
+      " días corridos de vacaciones por año completo (art. 150 LCT: hasta 5 años, 14; más de 5 hasta 10, 21; más de 10 hasta 20, 28; más de 20, 35).",
+      "Días trabajados en el año " + fin.y + " = del " + F(aDesde) + " al " + F(fin) + " = " + diasAnio + " días"];
+    var diasProp;
+    if (ant.total_meses < 6) {
+      diasProp = diasAnio / 20;
+      pasos.push("La antigüedad es menor a 6 meses: se aplica 1 día de descanso por cada 20 días de trabajo efectivo (art. 150 LCT, último párrafo).");
+      pasos.push("Días proporcionales = " + diasAnio + " / 20 = " + N(diasProp));
+    } else {
+      diasProp = diasAnio / 365 * diasVac;
+      pasos.push("Días proporcionales (art. 156 LCT) = (días trabajados en el año / 365) × días de vacaciones = (" +
+        diasAnio + " / 365) × " + diasVac + " = " + N(diasProp));
+    }
+    var neto = diasProp - gozadas;
+    if (neto < 0) neto = 0;
+    if (gozadas > 0) pasos.push("Menos vacaciones ya gozadas en el año: " + N(diasProp) + " − " + N(gozadas) + " = " + N(neto) + " días");
+    var diasPagar = neto + anteriores;
+    if (anteriores > 0) pasos.push("Más días de años anteriores no gozados: " + N(neto) + " + " + N(anteriores) + " = " + N(diasPagar) + " días");
+    v = r(sm / 25 * diasPagar);
+    pasos.push("Vacaciones no gozadas = (salario mensual / 25) × días a pagar = (" + M(sm) + " / 25) × " + N(diasPagar) + " = " + M(v));
+    val.vacaciones = v;
+    rubros.push(mk("vacaciones", "Vacaciones no gozadas (proporcionales)", true, v,
+      "Arts. 150, 151, 155 y 156 LCT",
+      "(salario mensual / 25) × (días trabajados en el año / 365) × días de vacaciones",
+      pasos,
+      "Al extinguirse el contrato, el trabajador cobra las vacaciones que no pudo gozar, en proporción al tiempo trabajado en el año. Cada día de vacaciones se paga con salario mensual / 25 (art. 155 LCT). Los días no se redondean.",
+      "Los días de vacaciones por antigüedad se determinan al 31/12 del año de egreso (art. 150). No se redondean los días proporcionales."));
+
+    v = r(val.vacaciones / 12);
+    val.sac_vacaciones = v;
+    rubros.push(mk("sac_vacaciones", "SAC sobre vacaciones no gozadas", true, v,
+      "Criterio jurisprudencial y de práctica (el SAC integra todo concepto remuneratorio)",
+      "vacaciones no gozadas / 12",
+      ["SAC = " + M(val.vacaciones) + " / 12 = " + M(v)],
+      "Las vacaciones son remuneración, por lo que generan un SAC proporcional equivalente a 1/12 de su monto."));
+
+    /* 4. Indemnización por antigüedad (art. 245) */
+    if (!incausado) {
+      rubros.push(mk("indemn_antiguedad", "Indemnización por antigüedad (art. 245 LCT)", false, 0,
+        "Art. 245 LCT", "", [], "", "",
+        "No procede: la extinción fue por " + TIPOS[tipo].toLowerCase() + "."));
+    } else if (enPrueba) {
+      rubros.push(mk("indemn_antiguedad", "Indemnización por antigüedad (art. 245 LCT)", false, 0,
+        "Art. 245 y art. 92 bis LCT", "", [], "", "",
+        "No procede: el contrato se extinguió dentro del período de prueba (" + prueba + " meses; antigüedad " + fmtAnt(ant) + ")."));
+    } else {
+      base = mrmnh;
+      pasos = ["Antigüedad = del " + F(ing) + " al " + F(fin) + " = " + fmtAnt(ant) + " (se cuenta el último día trabajado)."];
+      var critBase = "";
+      if (tope !== null && mrmnh > tope) {
+        base = tope;
+        pasos.push("La MRMNH (" + M(mrmnh) + ") supera el tope del convenio (" + M(tope) + "): se toma el tope como base (art. 245, 2.º párrafo).");
+        var piso = mrmnh * 0.67;
+        if (d.aplicar_vizzoti && base < piso) {
+          base = piso;
+          pasos.push("El tope reduce la base más de un 33% (" + M(tope) + " < 67% de " + M(mrmnh) + " = " + M(piso) +
+            "): se aplica el límite de CSJN \"Vizzoti\" (2004) y \"Díaz\" (2018), por lo que la base es " + M(base) + ".");
+          critBase = "Se aplicó el límite del 33% (CSJN Vizzoti, 2004; Díaz, 2018). Es una opción configurable.";
+        } else if (d.aplicar_vizzoti) {
+          pasos.push("El tope no reduce la base más de un 33% (67% de " + M(mrmnh) + " = " + M(piso) + "): se respeta el tope.");
+        } else {
+          critBase = "No se aplicó el límite Vizzoti/Díaz (opción desactivada).";
+        }
+      } else if (tope !== null) {
+        pasos.push("La MRMNH (" + M(mrmnh) + ") no supera el tope del convenio (" + M(tope) + "): se toma la MRMNH.");
+      } else {
+        pasos.push("No se informó tope de convenio: se toma la MRMNH como base (" + M(mrmnh) + ").");
+      }
+      frac = fraccionMayor3m(ant);
+      per = ant.anios + (frac ? 1 : 0);
+      if (per < 1) per = 1;
+      pasos.push("Períodos = años completos + 1 si la fracción final supera 3 meses = " + ant.anios + " + " + (frac ? 1 : 0) + " = " + per +
+        " (la fracción de " + plur(ant.meses, "mes", "meses") + " y " + plur(ant.dias, "día", "días") + " " + (frac ? "supera" : "no supera") + " 3 meses)");
+      v = r(base * per);
+      pasos.push("Indemnización = base × períodos = " + M(base) + " × " + per + " = " + M(v));
+      val.indemn_antiguedad = v;
+      rubros.push(mk("indemn_antiguedad", "Indemnización por antigüedad (art. 245 LCT)", true, v,
+        "Art. 245 LCT (texto según Ley 27.742); CSJN \"Vizzoti\" y \"Díaz\" (tope)",
+        "base (MRMNH, con tope) × (años de antigüedad + 1 si la fracción > 3 meses)",
+        pasos,
+        "Equivale a una mejor remuneración mensual normal y habitual por cada año de servicio o fracción mayor de tres meses, con un mínimo de una remuneración.",
+        (critBase ? critBase + " " : "") +
+        "Se computa un período por cada año completo y uno más si la fracción final supera los 3 meses (art. 245).",
+        "", !!critBase));
+    }
+    var cobraIndem = val.hasOwnProperty("indemn_antiguedad");
+
+    /* 5. Preaviso y SAC s/preaviso */
+    var omitido = incausado && !d.preaviso_otorgado;
+    if (incausado && d.preaviso_otorgado) {
+      rubros.push(mk("preaviso", "Indemnización sustitutiva de preaviso", false, 0,
+        "Arts. 231 y 232 LCT", "", [], "", "", "No procede: el preaviso fue otorgado."));
+    } else if (omitido) {
+      if (enPrueba) {
+        v = r(sm / 2);
+        pasos = ["El contrato se extinguió durante el período de prueba: el preaviso es de 15 días (art. 231, inc. b).",
+          "Preaviso = salario mensual / 2 = " + M(sm) + " / 2 = " + M(v)];
+        crit = "Se estimó el preaviso de 15 días como medio salario mensual.";
+        critValidar = true;
+      } else if (excedeAnios(ant, 5)) {
+        v = r(sm * 2);
+        pasos = ["Antigüedad: " + fmtAnt(ant) + " → excede de 5 años: preaviso de 2 meses (art. 231, inc. b).",
+          "Preaviso = salario mensual × 2 = " + M(sm) + " × 2 = " + M(v)];
+        crit = "El tramo de hasta 5 años (inclusive) corresponde a 1 mes; más de 5 años, a 2 meses.";
+        critValidar = false;
+      } else {
+        v = r(sm);
+        pasos = ["Antigüedad: " + fmtAnt(ant) + " → no excede de 5 años: preaviso de 1 mes (art. 231, inc. b).",
+          "Preaviso = salario mensual × 1 = " + M(v)];
+        crit = "El tramo de hasta 5 años (inclusive) corresponde a 1 mes; más de 5 años, a 2 meses.";
+        critValidar = false;
+      }
+      val.preaviso = v;
+      rubros.push(mk("preaviso", "Indemnización sustitutiva de preaviso", true, v,
+        "Arts. 231 y 232 LCT",
+        "salario mensual × 1 (hasta 5 años) o × 2 (más de 5 años); 15 días en período de prueba",
+        pasos,
+        "Si el empleador no da preaviso, debe pagar el salario correspondiente al plazo omitido.", crit, "", critValidar));
+      v2 = r(v / 12);
+      val.sac_preaviso = v2;
+      rubros.push(mk("sac_preaviso", "SAC sobre preaviso", true, v2,
+        "Criterio jurisprudencial (el preaviso es remuneratorio a los fines del SAC)",
+        "preaviso / 12",
+        ["SAC = " + M(v) + " / 12 = " + M(v2)],
+        "El preaviso sustituye una remuneración, por lo que se incluye su proporción de aguinaldo (1/12)."));
+    }
+
+    /* 6. Integración del mes de despido */
+    if (omitido && fin.d !== dimFin) {
+      var falt = dimFin - fin.d;
+      v = r(sd * falt);
+      val.integracion = v;
+      rubros.push(mk("integracion", "Integración del mes de despido", true, v,
+        "Art. 233 LCT",
+        "salario diario × días faltantes hasta fin de mes",
+        ["La extinción fue el " + F(fin) + "; el mes de " + MESES[fin.m - 1] + " tiene " + dimFin + " días: faltan " + falt + " días.",
+          "Salario diario = " + M(sm) + " / 30 = " + M(sd),
+          "Integración = salario diario × días faltantes = " + M(sd) + " × " + falt + " = " + M(v)],
+        "Si el despido se produce sin preaviso y no coincide con el último día del mes, se abona el salario de los días que restan hasta fin de mes.",
+        "Se calcula con el salario diario (salario mensual / 30) y no con la cantidad real de días del mes."));
+      if (d.sac_sobre_integracion) {
+        v2 = r(v / 12);
+        val.sac_integracion = v2;
+        rubros.push(mk("sac_integracion", "SAC sobre integración del mes", true, v2,
+          "Criterio jurisprudencial (discutido)", "integración / 12",
+          ["SAC = " + M(v) + " / 12 = " + M(v2)],
+          "Se agrega 1/12 de aguinaldo sobre la integración del mes.",
+          "Opción activada por el usuario: la jurisprudencia no es uniforme sobre si la integración del mes devenga SAC.", "", true));
+      }
+    } else if (incausado && omitido) {
+      rubros.push(mk("integracion", "Integración del mes de despido", false, 0, "Art. 233 LCT", "", [], "", "",
+        "No procede: la extinción coincide con el último día del mes."));
+    }
+
+    /* 7. Matrimonio / embarazo */
+    var esp = [["despido_matrimonio", "matrimonio", "Indemnización especial por despido por causa de matrimonio", "Arts. 180, 181 y 182 LCT"],
+      ["despido_embarazo", "embarazo", "Indemnización especial por despido por embarazo o maternidad", "Arts. 177, 178 y 182 LCT"]];
+    for (var i = 0; i < esp.length; i++) {
+      var flag = esp[i][0], clave = esp[i][1], nombre = esp[i][2], normaT = esp[i][3];
+      if (d[flag]) {
+        if (!incausado) {
+          rubros.push(mk(clave, nombre, false, 0, normaT, "", [], "", "",
+            "No procede: requiere un despido por parte del empleador (sin causa o indirecto)."));
+        } else {
+          v = r(mrmnh * 13);
+          val[clave] = v;
+          rubros.push(mk(clave, nombre, true, v, normaT,
+            "MRMNH × 13 (un año de remuneraciones)",
+            ["Art. 182: indemnización equivalente a un año de remuneraciones = 12 meses + SAC = 13 sueldos.",
+              "Indemnización = MRMNH × 13 = " + M(mrmnh) + " × 13 = " + M(v)],
+            "Se suma a la indemnización por antigüedad del art. 245. Se presume que el despido obedece a esta causa si ocurre dentro de los plazos legales y mediando la notificación requerida.",
+            "Se usa la MRMNH como base (el art. 182 habla de \"un año de remuneraciones\"). Verificar plazos de presunción (matrimonio: 3 meses antes y 6 después; embarazo: 7,5 meses antes y después del parto) y notificación.", "", true));
+        }
+      }
+    }
+
+    /* 8. Despido discriminatorio */
+    if (d.despido_discriminatorio) {
+      var nd = "Agravamiento por despido discriminatorio (art. 245 bis)";
+      if (!incausado) {
+        rubros.push(mk("discriminatorio", nd, false, 0, "Art. 245 bis LCT (Ley 27.742)", "", [], "", "",
+          "No procede: requiere un despido por parte del empleador."));
+      } else if (hist) {
+        rubros.push(mk("discriminatorio", nd, false, 0, "Art. 245 bis LCT (Ley 27.742)", "", [], "", "",
+          "No procede el agravamiento del art. 245 bis: el despido es anterior al 9/7/2024. Corresponde evaluar la reparación integral (Ley 23.592), no tarifada."));
+      } else if (!cobraIndem) {
+        rubros.push(mk("discriminatorio", nd, false, 0, "Art. 245 bis LCT (Ley 27.742)", "", [], "", "",
+          "No procede: no hay indemnización del art. 245 sobre la cual calcular el agravamiento."));
+      } else {
+        v = r(val.indemn_antiguedad * pctDisc / 100);
+        val.discriminatorio = v;
+        rubros.push(mk("discriminatorio", nd, true, v,
+          "Art. 245 bis LCT (incorporado por Ley 27.742)",
+          "indemnización art. 245 × porcentaje de agravamiento",
+          ["Agravamiento = " + M(val.indemn_antiguedad) + " × " + N(pctDisc) + "% = " + M(v)],
+          "Si una sentencia judicial declara el origen discriminatorio del despido, la indemnización por antigüedad se incrementa.",
+          "Rubro eventual: solo procede si una sentencia declara que el despido fue discriminatorio (la prueba está a cargo de quien lo invoca). Porcentaje configurable (50% por defecto); verificar en el texto del art. 245 bis si corresponde un porcentaje mayor en algún supuesto. Hay precedentes que cuestionan su constitucionalidad.", "", true));
+      }
+    }
+
+    /* 9. Régimen anterior a la Ley 27.742 */
+    if (hist) {
+      if (!d.certificado_entregado) {
+        if (d.intimacion_certificado) {
+          v = r(mrmnh * 3);
+          val.art80 = v;
+          rubros.push(mk("art80", "Multa por falta de entrega de certificados (art. 80 LCT)", true, v,
+            "Art. 80 LCT (según art. 45 Ley 25.345) y Dec. 146/01 — derogado por Ley 27.742 para extinciones desde el 9/7/2024",
+            "MRMNH × 3",
+            ["Indemnización = MRMNH × 3 = " + M(mrmnh) + " × 3 = " + M(v)],
+            "Si el empleador no entrega los certificados de trabajo y de aportes dentro de los 30 días corridos de la extinción y, intimado, no los entrega, debe pagar tres veces la mejor remuneración.",
+            "La base es la MRMNH (mejor remuneración mensual normal y habitual), como indica la norma. Supone intimación cumplida."));
+        } else {
+          rubros.push(mk("art80", "Multa por falta de entrega de certificados (art. 80 LCT)", false, 0, "Art. 80 LCT", "", [], "", "",
+            "No procede: no consta la intimación previa exigida por el Dec. 146/01."));
+        }
+      }
+      if (d.registracion_deficiente) {
+        var n1 = "Duplicación indemnizatoria por relación no registrada (art. 1 Ley 25.323)";
+        if (incausado && cobraIndem) {
+          v = val.indemn_antiguedad;
+          val.art1_25323 = v;
+          rubros.push(mk("art1_25323", n1, true, v,
+            "Art. 1 Ley 25.323 — derogada por Ley 27.742 para extinciones desde el 9/7/2024",
+            "igual al monto de la indemnización del art. 245",
+            ["Incremento = indemnización del art. 245 = " + M(v)],
+            "Cuando la relación no estaba registrada o lo estaba deficientemente, la indemnización por antigüedad se duplica (se suma otro importe igual).",
+            "Se calcula si procede la indemnización del art. 245. Verificar incompatibilidades con las multas de la Ley 24.013 según el caso.", "", true));
+        } else {
+          rubros.push(mk("art1_25323", n1, false, 0, "Art. 1 Ley 25.323", "", [], "", "",
+            "No procede: requiere indemnización por antigüedad (despido incausado fuera de período de prueba)."));
+        }
+      }
+      var iA = val.indemn_antiguedad || 0, iI = val.integracion || 0, iP = val.preaviso || 0;
+      if (incausado) {
+        var n2 = "Incremento del 50% (art. 2 Ley 25.323)";
+        if (cobraIndem && d.intimacion_pago) {
+          var bs = iA + iI + iP;
+          v = r(bs / 2);
+          val.art2_25323 = v;
+          rubros.push(mk("art2_25323", n2, true, v,
+            "Art. 2 Ley 25.323 — derogada por Ley 27.742 para extinciones desde el 9/7/2024",
+            "(indemnización art. 245 + integración del mes + preaviso) / 2",
+            ["Base = " + M(iA) + " + " + M(iI) + " + " + M(iP) + " = " + M(bs),
+              "Incremento = base / 2 = " + M(bs) + " / 2 = " + M(v)],
+            "Si el empleador no paga las indemnizaciones de los arts. 232, 233 y 245 y, intimado fehacientemente, obliga al trabajador a litigar, se incrementan en un 50%.",
+            "Supone intimación fehaciente al pago, cumplida y sin respuesta del empleador (campo intimacion_pago). Punto a validar en cada caso.", "", true));
+        } else {
+          rubros.push(mk("art2_25323", n2, false, 0, "Art. 2 Ley 25.323", "", [], "", "",
+            "No procede: " + (!cobraIndem ? "no hay indemnización del art. 245 (período de prueba)." : "no consta la intimación fehaciente al pago.")));
+        }
+      }
+      if (incausado && PAN_INI.o <= fin.o && fin.o <= PAN_FIN.o) {
+        var pct;
+        if (fin.o <= mkd(2021, 12, 31).o) pct = 100;
+        else if (fin.o <= mkd(2022, 2, 28).o) pct = 75;
+        else if (fin.o <= mkd(2022, 4, 30).o) pct = 50;
+        else pct = 25;
+        var bs2 = iA + iI + iP;
+        v = r(bs2 * pct / 100);
+        val.pandemia = v;
+        rubros.push(mk("pandemia", "Duplicación por emergencia sanitaria (DNU 34/2019 y prórrogas)", true, v,
+          "DNU 34/2019 y decretos prorrogatorios (escala decreciente en 2022)",
+          "(indemnización art. 245 + integración + preaviso) × porcentaje según fecha",
+          ["Fecha de extinción " + F(fin) + " → porcentaje aplicable: " + pct + "%",
+            "Base = " + M(iA) + " + " + M(iI) + " + " + M(iP) + " = " + M(bs2),
+            "Duplicación = base × " + pct + "% = " + M(v)],
+          "Durante la emergencia sanitaria se duplicaron las indemnizaciones por despido sin causa; a partir de 2022 el beneficio decreció por tramos.",
+          "Escala (100% hasta 31/12/2021; 75% ene-feb 2022; 50% mar-abr 2022; 25% may-jun 2022) a validar contra el texto de los decretos. Se fijó el cierre al 30/6/2022.", "", true));
+      }
+    }
+
+    /* Advertencias */
+    if (hist) {
+      adv.push("Extinción anterior al 9/7/2024 (fecha de vigencia de la Ley 27.742): se aplica el régimen anterior según la fecha de extinción. La aplicación temporal de la derogación es discutida en la jurisprudencia.");
+    } else {
+      adv.push("Extinción desde el 9/7/2024: rige la Ley 27.742, que derogó las multas del art. 80 LCT (Ley 25.345, arts. 43 a 48), la Ley 25.323 completa y los arts. 8 a 17 de la Ley 24.013; por eso no se calculan. Algunos tribunales admiten reclamos por reparación integral o responsabilidad civil, que no son tarifados y no se calculan aquí.");
+    }
+    if (pruebaAuto) {
+      adv.push("Período de prueba considerado: " + prueba + " meses (" + (hist ? "régimen anterior a la Ley 27.742" : "art. 92 bis según Ley 27.742") +
+        "). Es configurable; la Ley 27.742 admite ampliaciones por convenio o por tamaño de empresa. Punto a validar.");
+    } else {
+      adv.push("Período de prueba informado por el usuario: " + prueba + " meses.");
+    }
+    adv.push("Los pasos muestran valores redondeados a centavos; internamente se opera con precisión completa y cada rubro se redondea a dos decimales.");
+    adv.push("No se calculan intereses ni actualización monetaria.");
+    adv.push("Herramienta educativa: no reemplaza el asesoramiento profesional ni la liquidación de un perito contador.");
+
+    var total = 0;
+    for (var j = 0; j < rubros.length; j++) if (rubros[j].procede) total = total + rubros[j].valor;
+    total = r(total);
+
+    var datos = [
+      ["Fecha de ingreso", F(ing)],
+      ["Fecha de extinción", F(fin)],
+      ["Tipo de extinción", TIPOS[tipo]],
+      ["MRMNH", M(mrmnh)],
+      ["Salario mensual", M(sm)],
+      ["Salario diario (salario mensual / 30)", M(sd)],
+      ["Tope de convenio", tope !== null ? M(tope) : "No informado"],
+      ["Antigüedad", fmtAnt(ant)],
+      ["Régimen aplicable", hist ? "Anterior a Ley 27.742" : "Ley 27.742 (vigente)"],
+      ["Período de prueba", prueba + " meses"],
+      ["Semestre de la extinción", sNom + " (" + diasSem + " días trabajados)"],
+      ["Días trabajados en el año", String(diasAnio)],
+      ["Días trabajados en el mes de despido", String(diasTrab)],
+      ["Días faltantes hasta fin de mes", String(dimFin - fin.d)]
+    ];
+    return { version_motor: VERSION_MOTOR, datos: datos, rubros: rubros, total: total, advertencias: adv };
+  }
+
+  /* ------------------------------------------------------------ Markdown */
+  function aMarkdown(res) {
+    var L = [], n = 0, i, rb;
+    L.push("# Memoria de cálculo — liquidación por despido", "", "## 1. Datos registrados", "", "| Dato | Valor |", "|---|---|");
+    for (i = 0; i < res.datos.length; i++) L.push("| " + res.datos[i][0] + " | " + res.datos[i][1] + " |");
+    L.push("", "## 2. Cálculo paso a paso");
+    for (i = 0; i < res.rubros.length; i++) {
+      rb = res.rubros[i];
+      if (!rb.procede) continue;
+      n += 1;
+      L.push("", "### 2." + n + " " + rb.concepto, "", "- **Norma:** " + rb.norma, "- **Fórmula:** " + rb.formula, "- **Procedimiento:**");
+      for (var p = 0; p < rb.pasos.length; p++) L.push("  - " + rb.pasos[p]);
+      L.push("- **Resultado:** " + M(rb.valor), "- **Explicación:** " + rb.explicacion);
+      if (rb.criterio) L.push("- **" + (rb.validar ? "Para validar" : "Criterio adoptado") + ":** " + rb.criterio);
+    }
+    var noproc = res.rubros.filter(function (x) { return !x.procede; });
+    if (noproc.length) {
+      L.push("", "## 3. Rubros que no proceden", "");
+      for (i = 0; i < noproc.length; i++) L.push("- **" + noproc[i].concepto + "**: " + noproc[i].motivo);
+    }
+    L.push("", "## 4. Liquidación final", "", "| Concepto | Valor |", "|---|---:|");
+    for (i = 0; i < res.rubros.length; i++) {
+      rb = res.rubros[i];
+      if (rb.procede) L.push("| " + rb.concepto + " | " + M(rb.valor) + " |");
+    }
+    L.push("| **TOTAL** | **" + M(res.total) + "** |", "", "## 5. Advertencias y criterios generales", "");
+    for (i = 0; i < res.advertencias.length; i++) L.push("- " + res.advertencias[i]);
+    return L.join("\n");
+  }
+
+  var api = { calcular: calcular, aMarkdown: aMarkdown, M: M, N: N, r: r, TIPOS: TIPOS, VERSION_MOTOR: VERSION_MOTOR };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.LiquidacionEngine = api;
+})(typeof self !== "undefined" ? self : this);
+
+</script>
+<script>
+(function () {
+  "use strict";
+  var E = window.LiquidacionEngine;
+  var CONFIG = {
+    autor: "Darío Navarro"
+  };
+  var $ = function (id) { return document.getElementById(id); };
+  var out = $("out"), calculado = false, ultimo = null, timer = null;
+
+  $("org-lab").textContent = CONFIG.autor;
+  $("pie").innerHTML = "";
+  [ "Herramienta educativa: no reemplaza el asesoramiento profesional ni la liquidación de un perito contador.",
+    "Los datos se procesan en tu navegador y no se envían a ningún servidor." ]
+    .forEach(function (t) { var p = document.createElement("p"); p.textContent = t; $("pie").appendChild(p); });
+
+  /* ---------- helpers ---------- */
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  function parseNum(s) {
+    s = String(s === undefined || s === null ? "" : s).trim().replace(/\s|\$/g, "");
+    if (!s) return null;
+    if (s.indexOf(",") >= 0) s = s.replace(/\./g, "").replace(",", ".");
+    else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+    var n = Number(s);
+    return isNaN(n) ? NaN : n;
+  }
+  function interp(id) {
+    var v = parseNum($(id).value), t = $("i_" + id);
+    if (!t) return;
+    t.textContent = (v === null || isNaN(v)) ? (v === null ? "" : "No se entiende como número.") : "Se interpreta como " + E.M(v);
+  }
+  ["mrmnh", "salario_mensual", "tope_convenio"].forEach(function (id) {
+    $(id).addEventListener("input", function () { interp(id); });
+  });
+
+  /* ---------- régimen y visibilidad ---------- */
+  var LIMITE = "2024-07-09";
+  function sync() {
+    var fin = $("fecha_fin").value, reg = $("regimen"), hist = false, valida = /^\d{4}-\d{2}-\d{2}$/.test(fin);
+    if (valida) {
+      hist = fin < LIMITE;
+      reg.hidden = false;
+      reg.textContent = hist ? "Régimen aplicable: anterior a la Ley 27.742 (extinción antes del 9/7/2024)"
+                             : "Régimen aplicable: Ley 27.742 (extinción desde el 9/7/2024)";
+    } else { reg.hidden = true; }
+    $("grp_hist").hidden = !hist;
+    $("opt_auto").textContent = "Automático (" + (hist ? 3 : 6) + " meses)";
+    $("w_int_cert").hidden = $("certificado_entregado").checked;
+    $("w_pct").hidden = !$("despido_discriminatorio").checked;
+  }
+  ["fecha_fin", "certificado_entregado", "despido_discriminatorio"].forEach(function (id) {
+    $(id).addEventListener("change", sync);
+  });
+  sync();
+
+  /* ---------- lectura y validación ---------- */
+  function leer() {
+    var errores = [], d = {};
+    d.fecha_ingreso = $("fecha_ingreso").value;
+    d.fecha_fin = $("fecha_fin").value;
+    if (!d.fecha_ingreso) errores.push("Ingresá la fecha de ingreso.");
+    if (!d.fecha_fin) errores.push("Ingresá la fecha de extinción.");
+    if (d.fecha_ingreso && d.fecha_fin && d.fecha_fin < d.fecha_ingreso) errores.push("La fecha de extinción no puede ser anterior a la fecha de ingreso.");
+    d.tipo_extincion = $("tipo_extincion").value;
+    var m = parseNum($("mrmnh").value);
+    if (m === null || isNaN(m) || m <= 0) errores.push("Ingresá la MRMNH como un número mayor que cero.");
+    d.mrmnh = m;
+    function opt(id, nombre, positivo) {
+      var v = parseNum($(id).value);
+      if (v === null) return null;
+      if (isNaN(v) || v < 0 || (positivo && v === 0)) { errores.push(nombre + ": ingresá un número válido."); return null; }
+      return v;
+    }
+    d.salario_mensual = opt("salario_mensual", "Salario mensual", true);
+    d.tope_convenio = opt("tope_convenio", "Tope del convenio", true);
+    d.vacaciones_gozadas_dias = opt("vacaciones_gozadas_dias", "Vacaciones gozadas") || 0;
+    d.vacaciones_anteriores_dias = opt("vacaciones_anteriores_dias", "Vacaciones de años anteriores") || 0;
+    d.preaviso_otorgado = $("preaviso_otorgado").checked;
+    d.periodo_prueba_meses = $("periodo_prueba_meses").value === "" ? null : Number($("periodo_prueba_meses").value);
+    d.registracion_deficiente = $("registracion_deficiente").checked;
+    d.certificado_entregado = $("certificado_entregado").checked;
+    d.intimacion_certificado = $("intimacion_certificado").checked;
+    d.intimacion_pago = $("intimacion_pago").checked;
+    d.despido_matrimonio = $("despido_matrimonio").checked;
+    d.despido_embarazo = $("despido_embarazo").checked;
+    d.despido_discriminatorio = $("despido_discriminatorio").checked;
+    d.porcentaje_discriminatorio = Number($("porcentaje_discriminatorio").value);
+    d.sac_sobre_integracion = $("sac_sobre_integracion").checked;
+    d.divisor_sac = $("divisor_sac").value;
+    d.aplicar_vizzoti = $("aplicar_vizzoti").checked;
+    return { datos: d, errores: errores };
+  }
+
+  /* ---------- render ---------- */
+  function mostrarErrores(lista) {
+    out.innerHTML = "";
+    var b = el("div", "err");
+    b.setAttribute("role", "alert");
+    b.appendChild(el("strong", null, "Revisá estos datos para poder calcular"));
+    var ul = el("ul", "plain");
+    lista.forEach(function (t) { ul.appendChild(el("li", null, t)); });
+    b.appendChild(ul);
+    out.appendChild(b);
+  }
+
+  function seccion(titulo) {
+    var s = el("section");
+    s.appendChild(el("h2", null, titulo));
+    return s;
+  }
+
+  function render(res) {
+    out.innerHTML = "";
+    var proc = res.rubros.filter(function (r) { return r.procede; });
+    var noproc = res.rubros.filter(function (r) { return !r.procede; });
+
+    /* Total y tabla */
+    var s1 = el("section");
+    var tot = el("div", "total");
+    tot.appendChild(el("h2", null, "Total de la liquidación"));
+    tot.appendChild(el("p", "amount", E.M(res.total)));
+    var reg = res.datos.filter(function (x) { return x[0] === "Régimen aplicable"; })[0][1];
+    var ant = res.datos.filter(function (x) { return x[0] === "Antigüedad"; })[0][1];
+    tot.appendChild(el("p", null, "Antigüedad: " + ant + ". Régimen: " + reg + "."));
+    var tb = el("table", "liq");
+    var cap = el("caption", "sr-only", "Rubros de la liquidación");
+    tb.appendChild(cap);
+    var th = el("thead"), trh = el("tr");
+    trh.appendChild(el("th", null, "Concepto")); trh.lastChild.scope = "col";
+    var thv = el("th", "num", "Importe"); thv.scope = "col"; trh.appendChild(thv);
+    th.appendChild(trh); tb.appendChild(th);
+    var tbody = el("tbody");
+    proc.forEach(function (r) {
+      var tr = el("tr"); tr.appendChild(el("td", null, r.concepto)); tr.appendChild(el("td", "num", E.M(r.valor))); tbody.appendChild(tr);
+    });
+    tb.appendChild(tbody);
+    var tf = el("tfoot"), trf = el("tr"); trf.appendChild(el("td", null, "Total")); trf.appendChild(el("td", "num", E.M(res.total)));
+    tf.appendChild(trf); tb.appendChild(tf);
+    tot.appendChild(tb);
+    var bar = el("div", "toolbar");
+    var b1 = el("button", "btn primary", "Copiar memoria de cálculo"); b1.type = "button";
+    var b2 = el("button", "btn secondary", "Descargar (.md)"); b2.type = "button";
+    var b3 = el("button", "btn secondary", "Imprimir o guardar en PDF"); b3.type = "button";
+    var st = el("span", "status"); st.setAttribute("role", "status");
+    bar.appendChild(b1); bar.appendChild(b2); bar.appendChild(b3); bar.appendChild(st);
+    tot.appendChild(bar);
+    s1.appendChild(tot);
+    out.appendChild(s1);
+
+    var md = E.aMarkdown(res);
+    b1.addEventListener("click", function () {
+      copiar(md).then(function () { st.textContent = "Memoria copiada al portapapeles."; }, function () { st.textContent = "No se pudo copiar. Usá Descargar."; });
+    });
+    b2.addEventListener("click", function () {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([md], { type: "text/markdown;charset=utf-8" }));
+      a.download = "memoria-de-calculo-liquidacion.md";
+      document.body.appendChild(a); a.click(); a.remove();
+      st.textContent = "Archivo descargado.";
+    });
+    b3.addEventListener("click", function () { abrirTodo(true); window.print(); });
+
+    /* Datos de partida */
+    var s2 = seccion("Datos de partida");
+    var pp = el("div", "paper"), td = el("table", "datos");
+    res.datos.forEach(function (x) {
+      var tr = el("tr"); var h = el("th", null, x[0]); h.scope = "row"; tr.appendChild(h); tr.appendChild(el("td", null, x[1])); td.appendChild(tr);
+    });
+    pp.appendChild(td); s2.appendChild(pp); out.appendChild(s2);
+
+    /* Criterios para revisar */
+    var crit = res.rubros.filter(function (r) { return r.criterio && r.validar; });
+    if (crit.length) {
+      var s3 = seccion("Puntos para validar (" + crit.length + ")");
+      s3.appendChild(el("p", "hint", "Decisiones de interpretación o datos que conviene contrastar con la norma. Cada uno aparece también en su rubro, marcado en rojo."));
+      var ul = el("ul", "plain");
+      crit.forEach(function (r) {
+        var li = el("li"); li.appendChild(el("strong", null, r.concepto + ". ")); li.appendChild(document.createTextNode(r.criterio)); ul.appendChild(li);
+      });
+      s3.appendChild(ul); out.appendChild(s3);
+    }
+
+    /* Memoria de cálculo */
+    var s4 = el("section"); s4.className = "memoria";
+    var hd = el("div", "head"); hd.appendChild(el("h2", null, "Memoria de cálculo"));
+    var tg = el("button", "btn secondary", "Contraer todo"); tg.type = "button"; hd.appendChild(tg);
+    s4.appendChild(hd);
+    var abiertos = true;
+    tg.addEventListener("click", function () { abiertos = !abiertos; abrirTodo(abiertos); tg.textContent = abiertos ? "Contraer todo" : "Expandir todo"; });
+    proc.forEach(function (r, i) {
+      var dt = el("details", "rubro"); dt.open = true;
+      var sm = el("summary");
+      sm.appendChild(el("span", null, String(i + 1)));
+      sm.appendChild(el("span", null, r.concepto));
+      sm.appendChild(el("span", "amt", E.M(r.valor)));
+      dt.appendChild(sm);
+      var rb = el("div", "rb");
+      var mg = el("div", "margen"); mg.appendChild(el("b", null, "Norma")); mg.appendChild(document.createTextNode(r.norma));
+      var cu = el("div", "cuerpo");
+      cu.appendChild(el("h3", null, "Fórmula")); cu.appendChild(el("div", "formula", r.formula));
+      cu.appendChild(el("h3", null, "Procedimiento con los datos"));
+      var ol = el("ol"); r.pasos.forEach(function (p) { ol.appendChild(el("li", null, p)); }); cu.appendChild(ol);
+      cu.appendChild(el("p", "res", "Resultado: " + E.M(r.valor)));
+      cu.appendChild(el("p", "expl", r.explicacion));
+      if (r.criterio) {
+        var nt = el("div", r.validar ? "pen" : "nota");
+        nt.appendChild(el("b", null, r.validar ? "Para validar. " : "Criterio adoptado. "));
+        nt.appendChild(document.createTextNode(r.criterio)); cu.appendChild(nt);
+      }
+      rb.appendChild(mg); rb.appendChild(cu); dt.appendChild(rb); s4.appendChild(dt);
+    });
+    out.appendChild(s4);
+    out.lastChild.style.marginBottom = "40px";
+
+    /* No proceden */
+    if (noproc.length) {
+      var s5 = seccion("Rubros que no proceden");
+      var dl = el("dl", "nop");
+      noproc.forEach(function (r) { dl.appendChild(el("dt", null, r.concepto)); dl.appendChild(el("dd", null, r.motivo)); });
+      s5.appendChild(dl); out.appendChild(s5);
+    }
+
+    /* Advertencias */
+    var s6 = seccion("Advertencias y criterios generales");
+    var ul2 = el("ul", "plain"); res.advertencias.forEach(function (a) { ul2.appendChild(el("li", null, a)); });
+    s6.appendChild(ul2); out.appendChild(s6);
+  }
+
+  function abrirTodo(v) { Array.prototype.forEach.call(document.querySelectorAll("details.rubro"), function (d) { d.open = v; }); }
+  window.addEventListener("beforeprint", function () { abrirTodo(true); });
+  function copiar(t) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+    return new Promise(function (ok, no) {
+      var ta = document.createElement("textarea"); ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy") ? ok() : no(); } catch (e) { no(e); } ta.remove();
+    });
+  }
+
+  /* ---------- acciones ---------- */
+  function calcular(foco) {
+    var l = leer();
+    if (l.errores.length) { mostrarErrores(l.errores); ultimo = null; return; }
+    try {
+      ultimo = E.calcular(l.datos);
+      render(ultimo);
+      calculado = true;
+      if (foco) { out.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); }
+    } catch (e) { mostrarErrores([e.message]); }
+  }
+  $("f").addEventListener("submit", function (ev) { ev.preventDefault(); calcular(window.innerWidth <= 940); });
+  $("f").addEventListener("input", function () { if (!calculado) return; clearTimeout(timer); timer = setTimeout(function () { calcular(false); }, 250); });
+  $("f").addEventListener("change", function () { if (!calculado) return; clearTimeout(timer); timer = setTimeout(function () { calcular(false); }, 100); });
+
+  function cargar(d) {
+    ["fecha_ingreso", "fecha_fin", "mrmnh", "salario_mensual", "tope_convenio", "vacaciones_gozadas_dias", "vacaciones_anteriores_dias"].forEach(function (k) {
+      var vacio = (k === "vacaciones_gozadas_dias" || k === "vacaciones_anteriores_dias") ? "0" : "";
+      $(k).value = d[k] === undefined || d[k] === null ? vacio : String(d[k]);
+    });
+    $("tipo_extincion").value = d.tipo_extincion || "sin_causa";
+    ["preaviso_otorgado", "registracion_deficiente", "certificado_entregado", "intimacion_certificado", "intimacion_pago", "despido_matrimonio", "despido_embarazo", "despido_discriminatorio", "sac_sobre_integracion", "aplicar_vizzoti"].forEach(function (k) {
+      $(k).checked = d[k] === undefined ? $(k).defaultChecked : !!d[k];
+    });
+    ["mrmnh", "salario_mensual", "tope_convenio"].forEach(interp);
+    sync();
+  }
+  var EJ = {
+    vigente: { fecha_ingreso: "2018-03-01", fecha_fin: "2025-05-15", tipo_extincion: "sin_causa", mrmnh: 1000000 },
+    historico: { fecha_ingreso: "2020-01-10", fecha_fin: "2023-06-10", tipo_extincion: "sin_causa", mrmnh: 900000, certificado_entregado: false, registracion_deficiente: true }
+  };
+  Array.prototype.forEach.call(document.querySelectorAll("[data-ej]"), function (b) {
+    b.addEventListener("click", function () { cargar(EJ[b.getAttribute("data-ej")]); calcular(window.innerWidth <= 940); });
+  });
+  $("limpiar").addEventListener("click", function () {
+    $("f").reset(); calculado = false; ultimo = null;
+    ["mrmnh", "salario_mensual", "tope_convenio"].forEach(function (id) { $("i_" + id).textContent = ""; });
+    sync();
+    out.innerHTML = "";
+    var e = el("div", "empty"); e.appendChild(el("h2", null, "Completá los datos y calculá"));
+    e.appendChild(el("p", null, "Vas a ver el total y la tabla de rubros. Debajo, la memoria de cálculo: para cada rubro, la norma, la fórmula, los pasos con tus datos y los criterios que conviene revisar."));
+    out.appendChild(e);
+  });
+})();
+</script>
+</body>
+</html>
