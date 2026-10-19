@@ -174,8 +174,6 @@ details.rubro>summary:hover{background:var(--soft)}
       <label class="check"><input type="checkbox" id="preaviso_otorgado"><span class="lbl">El empleador otorgó el preaviso</span></label>
       <div class="field"><label for="vacaciones_gozadas_dias">Días de vacaciones ya gozados en el año de egreso</label>
         <input type="text" id="vacaciones_gozadas_dias" inputmode="decimal" value="0"></div>
-      <div class="field"><label for="vacaciones_anteriores_dias">Días de vacaciones de años anteriores no gozados</label>
-        <input type="text" id="vacaciones_anteriores_dias" inputmode="decimal" value="0"></div>
     </fieldset>
 
     <fieldset id="grp_hist" hidden>
@@ -252,7 +250,6 @@ details.rubro>summary:hover{background:var(--soft)}
     tope_convenio: null,
     preaviso_otorgado: false,
     vacaciones_gozadas_dias: 0,
-    vacaciones_anteriores_dias: 0,
     periodo_prueba_meses: null,
     registracion_deficiente: false,
     certificado_entregado: true,
@@ -367,7 +364,6 @@ details.rubro>summary:hover{background:var(--soft)}
     var sm = d.salario_mensual ? num(d.salario_mensual, "salario_mensual", true) : mrmnh;
     var tope = d.tope_convenio ? num(d.tope_convenio, "tope_convenio", true) : null;
     var gozadas = num(d.vacaciones_gozadas_dias, "vacaciones_gozadas_dias");
-    var anteriores = num(d.vacaciones_anteriores_dias, "vacaciones_anteriores_dias");
     var divisorOpt = String(d.divisor_sac);
     if (divisorOpt !== "180" && divisorOpt !== "real") throw new Error("divisor_sac debe ser '180' o 'real'");
     var pctDisc = num(d.porcentaje_discriminatorio, "porcentaje_discriminatorio", true);
@@ -461,8 +457,7 @@ details.rubro>summary:hover{background:var(--soft)}
     var neto = diasProp - gozadas;
     if (neto < 0) neto = 0;
     if (gozadas > 0) pasos.push("Menos vacaciones ya gozadas en el año: " + N(diasProp) + " − " + N(gozadas) + " = " + N(neto) + " días");
-    var diasPagar = neto + anteriores;
-    if (anteriores > 0) pasos.push("Más días de años anteriores no gozados: " + N(neto) + " + " + N(anteriores) + " = " + N(diasPagar) + " días");
+    var diasPagar = neto;
     v = r(sm / 25 * diasPagar);
     pasos.push("Vacaciones no gozadas = (salario mensual / 25) × días a pagar = (" + M(sm) + " / 25) × " + N(diasPagar) + " = " + M(v));
     val.vacaciones = v;
@@ -471,7 +466,7 @@ details.rubro>summary:hover{background:var(--soft)}
       "(salario mensual / 25) × (días trabajados en el año / 365) × días de vacaciones",
       pasos,
       "Al extinguirse el contrato, el trabajador cobra las vacaciones que no pudo gozar, en proporción al tiempo trabajado en el año. Cada día de vacaciones se paga con salario mensual / 25 (art. 155 LCT). Los días no se redondean.",
-      "Los días de vacaciones por antigüedad se determinan al 31/12 del año de egreso (art. 150). No se redondean los días proporcionales."));
+      "Los días de vacaciones por antigüedad se determinan al 31/12 del año de egreso (art. 150). No se redondean los días proporcionales. Solo se pagan las vacaciones proporcionales del año del egreso (art. 156): las de años anteriores no gozadas no se compensan en dinero (art. 162)."));
 
     v = r(val.vacaciones / 12);
     val.sac_vacaciones = v;
@@ -873,7 +868,6 @@ details.rubro>summary:hover{background:var(--soft)}
     d.salario_mensual = opt("salario_mensual", "Salario mensual", true);
     d.tope_convenio = opt("tope_convenio", "Tope del convenio", true);
     d.vacaciones_gozadas_dias = opt("vacaciones_gozadas_dias", "Vacaciones gozadas") || 0;
-    d.vacaciones_anteriores_dias = opt("vacaciones_anteriores_dias", "Vacaciones de años anteriores") || 0;
     d.preaviso_otorgado = $("preaviso_otorgado").checked;
     d.periodo_prueba_meses = $("periodo_prueba_meses").value === "" ? null : Number($("periodo_prueba_meses").value);
     d.registracion_deficiente = $("registracion_deficiente").checked;
@@ -1052,8 +1046,8 @@ details.rubro>summary:hover{background:var(--soft)}
   $("f").addEventListener("change", function () { if (!calculado) return; clearTimeout(timer); timer = setTimeout(function () { calcular(false); }, 100); });
 
   function cargar(d) {
-    ["fecha_ingreso", "fecha_fin", "mrmnh", "salario_mensual", "tope_convenio", "vacaciones_gozadas_dias", "vacaciones_anteriores_dias"].forEach(function (k) {
-      var vacio = (k === "vacaciones_gozadas_dias" || k === "vacaciones_anteriores_dias") ? "0" : "";
+    ["fecha_ingreso", "fecha_fin", "mrmnh", "salario_mensual", "tope_convenio", "vacaciones_gozadas_dias"].forEach(function (k) {
+      var vacio = k === "vacaciones_gozadas_dias" ? "0" : "";
       $(k).value = d[k] === undefined || d[k] === null ? vacio : String(d[k]);
     });
     $("tipo_extincion").value = d.tipo_extincion || "sin_causa";
